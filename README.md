@@ -38,9 +38,11 @@ docker run --platform linux/amd64 -it --init --rm -p 3000:3000 -v ${PWD}/index.h
 
 ---
 
+Original README:
+
 > # docker-static-website
 > 
-> A very small Docker image (~100KB) to run any static website, based on the [BusyBox httpd](https://www.busybox.net/) static file server.
+> A very small Docker image (~154KB) to run any static website, based on the [BusyBox httpd](https://www.busybox.net/) static file server.
 > 
 > > If you're using the previous version (1.x, based on *thttpd*), I recommend upgrading since the new version (2.x) comes with a much smaller memory footprint.
 > 
@@ -82,7 +84,7 @@ docker run --platform linux/amd64 -it --init --rm -p 3000:3000 -v ${PWD}/index.h
 > CMD ["/busybox", "httpd", "-f", "-v", "-p", "3000", "-c", "httpd.conf"]
 > ```
 > 
-> **NOTE:** Sending a `TERM` signal to your TTY running the container won't get propagated due to how busybox is built. Instead you can call `docker stop` (or `docker kill` if can't > wait 15 seconds). Alternatively you can run the container with `docker run -it --rm --init` which will propagate signals to the process correctly.
+> **NOTE:** Sending a `TERM` signal to your TTY running the container won't get propagated due to how busybox is built. Instead you can call `docker stop` (or `docker kill` > if can't wait 15 seconds). Alternatively you can run the container with `docker run -it --rm --init` which will propagate signals to the process correctly.
 > 
 > ## FAQ
 > 
@@ -140,6 +142,53 @@ docker run --platform linux/amd64 -it --init --rm -p 3000:3000 -v ${PWD}/index.h
 > ### Where can I find the documentation for BusyBox httpd?
 > 
 > Read the [source code comments](https://git.busybox.net/busybox/tree/networking/httpd.c).
+> 
+> ## Development
+> 
+> Clone the [busybox repo](https://git.busybox.net/busybox/tree) and create a blank config:
+> 
+> ```
+> make allnoconfig
+> ```
+> 
+> Copy the resulting `.config` to this project, diff it against the old one and re-enable everything that seems reasonable (mostly the `HTTPD` features).
+> 
+> Uncomment the `COPY . .` line in the `Dockerfile`, add a dummy `index.html` and build a test image:
+> 
+> ```
+> docker build -t docker-static-website-test .
+> ```
+> 
+> Then run it:
+> 
+> ```
+> docker run -it --rm --init -p 3000:3000 docker-static-website-test
+> ```
+> 
+> Browse to `http://localhost:3000` and check that the contents of the `index.html` file were rendered correctly.
+> 
+> ## Release
+> 
+> Build the image:
+> 
+> ```
+> docker build -t lipanski/docker-static-website:1.2.3 .
+> ```
+> 
+> Push the image to Docker Hub:
+> 
+> ```
+> docker push lipanski/docker-static-website:1.2.3
+> ```
+> 
+> Tag the release:
+> 
+> ```
+> git tag 1.2.3
+> git push --tags
+> ```
+> 
+> 
 > 
 
 Enjoy! :smile:
